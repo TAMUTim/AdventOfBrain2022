@@ -15,7 +15,7 @@ struct pair_hash {
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
-    freopen("12_sample.txt", "r", stdin);
+    freopen("12_in.txt", "r", stdin);
     freopen("12_out.txt", "w", stdout);
 
     vector<vector<char>> v;
@@ -46,13 +46,14 @@ int main() {
 
     // now do like bs or djikstras or smth
     queue<pair<pair<int, int>, int>> q;
+    unordered_set<pair<int, int>, pair_hash> us;
     q.emplace(make_pair(st, 0));
+    us.emplace(st);
 
     ll int mi = INT32_MAX;
     while(!q.empty()) {
         pair<pair<int, int>, int> pos = q.front();
         q.pop();
-        cout << pos.first.first << " " << pos.first.second << ": " << v[pos.first.first][pos.first.second] << endl;
 
         if(v[pos.first.first][pos.first.second] == 'E') {
             mi = min(mi, (ll int) pos.second);
@@ -62,29 +63,45 @@ int main() {
         
         // put in cardinal nodes
         // up
-        if(pos.first.first + 1 >= 0 
-            && abs(cur - (v[pos.first.first - 1][pos.first.second] == 'E' ? 'z' : v[pos.first.first - 1][pos.first.second])) <= 1) {
+        if(pos.first.first - 1 >= 0 
+            && cur - (v[pos.first.first - 1][pos.first.second] == 'E' ? 'z' : v[pos.first.first - 1][pos.first.second]) >= -1
+            && us.find(make_pair(pos.first.first - 1, pos.first.second)) == us.end()
+        ) {
             q.emplace(make_pair(make_pair(pos.first.first - 1, pos.first.second), pos.second + 1));
+            us.emplace(make_pair(pos.first.first - 1, pos.first.second));
         } 
 
         // down
         if(pos.first.first + 1 < v.size() 
-            && abs(cur - (v[pos.first.first + 1][pos.first.second] == 'E' ? 'z' : v[pos.first.first + 1][pos.first.second])) <= 1) {
+            && cur - (v[pos.first.first + 1][pos.first.second] == 'E' ? 'z' : v[pos.first.first + 1][pos.first.second]) >= -1
+            && us.find(make_pair(pos.first.first + 1, pos.first.second)) == us.end()
+        ) {
             q.emplace(make_pair(make_pair(pos.first.first + 1, pos.first.second), pos.second + 1));
+            us.emplace(make_pair(pos.first.first + 1, pos.first.second));
         } 
 
         // left
         if(pos.first.second - 1 >= 0 
-            && abs(cur - (v[pos.first.first][pos.first.second - 1] == 'E' ? 'z' : v[pos.first.first + 1][pos.first.second])) <= 1) {
+            && cur - (v[pos.first.first][pos.first.second - 1] == 'E' ? 'z' : v[pos.first.first][pos.first.second - 1]) >= -1
+            && us.find(make_pair(pos.first.first, pos.first.second - 1)) == us.end()
+        ) {
             q.emplace(make_pair(make_pair(pos.first.first, pos.first.second - 1), pos.second + 1));
+            us.emplace(make_pair(pos.first.first, pos.first.second - 1));
         } 
 
         // right
-        if(pos.first.second < v[0].size() 
-            && abs(cur - (v[pos.first.first][pos.first.second + 1] == 'E' ? 'z' : v[pos.first.first][pos.first.second + 1])) <= 1) {
+        if(pos.first.second + 1 < v[0].size() 
+            && cur - (v[pos.first.first][pos.first.second + 1] == 'E' ? 'z' : v[pos.first.first][pos.first.second + 1]) >= -1
+            && us.find(make_pair(pos.first.first, pos.first.second + 1)) == us.end()
+        ) {
             q.emplace(make_pair(make_pair(pos.first.first, pos.first.second + 1), pos.second + 1));
+            us.emplace(make_pair(pos.first.first, pos.first.second + 1));
         } 
+
+        // cout << "finished placement into queue, with new size of: " << q.size() << endl;
     }
+
+    cout << mi << endl;
 
     return 0;
 }
