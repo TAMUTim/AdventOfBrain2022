@@ -13,103 +13,115 @@ struct pair_hash {
 };
 
 int solve(string l, string b) {
-    // loop through the strings
-    ll int li = 1;
-    ll int bi = 1;
-    ll int s = 0;
+    // process as single list
+    // if bracket then recur call and return, easy since we now just return bool
+    ll int lind = 1, bind = 1;
 
-    // remove the first and lost
-    // l = l.substr(1, l.size() - 2);
-    // b = b.substr(1, b.size() - 2);
-    
-    vector<string> lv, bv;
+    while(lind <= l.size() - 2 || bind <= b.size() - 2) {
+        string ls = "", bs = "";
 
-    ll int lic = 0, bic = 0;
-    while(li < l.size() && bi < b.size()) {
-        // loop until hit a comma
-        string t1 = "";
-        string t2 = "";
+        bool rhsv = false, lhsv = false;
 
-        cout << t1 << " " << t2 << endl;
-
-        bool ilb = false, irb = false; 
-
-        // compare elements
-        while(l[li] != ',') {
-            if(l[li] == '[') {
-                ilb = true;
-                // instead get the entire bracket quandry
-                while(l[li] != ']') {
-                    t1.push_back(l[li]);                    
-                    li++;
-                    cout << t1 << endl;
-                }
-                t1.push_back(l[li]);
-                li++;
-                cout << t1 << endl;
-                break;
-            } else if(l[li] == ']') {
-                break;
-            } else {
-                t1.push_back(l[li]);
+        // get element normally
+        if(lind <= l.size() - 1 && l[lind] != '[') {
+            while(l[lind] != ',' && lind < l.size() - 1) {
+                ls.push_back(l[lind]);
+                lind++;
             }
-            li++;
-        }
-        cout << endl;
-
-        while(b[bi] != ',') {
-            if(b[bi] == '[') {
-                irb = true;
-                while(b[bi] != ']') {
-                    t2.push_back(b[bi]);                    
-                    bi++;
-                }
-                t1.push_back(b[bi]);
-                cout << t2 << endl;
-                bi++;
-                break;
-            } else if(b[bi] == ']') {
-                break;
-            } else  {
-                t2.push_back(b[bi]);
+            if(l[lind] == ',') { lind++; }
+        } else if(lind <= l.size() - 1 && l[lind] == '[') {
+            // what to do if
+            ll int mtx = 1;
+            lhsv = true;
+            while(mtx != 0) {
+                ls.push_back(l[lind]);
+                lind++;
+                if(l[lind] == '[') { mtx++; } 
+                else if(l[lind] == ']') { mtx--; }
             }
-            bi++;
+            ls.push_back(l[lind]);
+            lind++;
+
+            if(l[lind] == ',') { lind++; }
         }
-        bi++; li++;
 
 
-        cout << t1 << " " << t2 << endl;
+        // get element normally
+        if(bind <= b.size() - 1 && b[bind] != '[') {
+            while(b[bind] != ',' && bind < b.size() - 1) {
+                bs.push_back(b[bind]);
+                bind++;
+            }
+            if(b[bind] == ',') { bind++; }
+        } else if(bind <= b.size() - 1 && b[bind] == '[') {
+            // what to do if
+            ll int mtx = 1;
+            rhsv = true;
+            while(mtx != 0) {
+                bs.push_back(b[bind]);
+                bind++;
+                if(b[bind] == '[') { mtx++; } 
+                else if(b[bind] == ']') { mtx--; }
+            }
+            bs.push_back(b[bind]);
+            bind++;
 
-        // now have string form of side by side elemnts: t1 and t2
-        // if(ilb && irb) {
-        //     s += solve(t1, t2);
-        // } else if(!ilb && !irb) {
-        //     // both not vectors
-        // } else if(ilb && !irb) {
-        //     // left hand vector and right hand not
-        //     // convert right side to vector and process with solve
-        // } else if(!ilb && irb) {
-        //     // left hand not vector and right hand is
-        //     // convert left side to vector and process with solve
-        // }
+            if(b[bind] == ',') { bind++; }
+        }
+
+        // cout << ls << " vs. " << bs << endl;
+        if(!bs.empty() && ls.empty()) { return 1; } 
+        if(bs.empty() && !ls.empty()) { return -1; }
+
+        if(!rhsv && !lhsv) {
+            if(stoi(ls) > stoi(bs)) {
+                // cout << ls << " vs. " << bs << " is out of order\n";
+                return -1;
+            } else if(stoi(ls) < stoi(bs)) {
+                return 1;
+            }
+        } else {
+            // one of the comparing objects is a vector
+            // turn into vector for the one without
+            if(!rhsv) {
+                // want to vectorize whatevers in here
+                string tem = "[";
+                tem += bs;
+                tem += "]";
+                bs = tem;
+            }
+            
+            if(!lhsv) {
+                string tem = "[";
+                tem += ls;
+                tem += "]";
+                ls = tem;
+            }
+
+            if(solve(ls, bs) < 0) return -1;
+            if(solve(ls, bs) > 0) return 1;
+        }
     }
-
-    return s;
+    
+    return 0;
 }
 
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
-    freopen("13_sample.txt", "r", stdin);
+    freopen("13_in.txt", "r", stdin);
     freopen("13_out.txt", "w", stdout);
 
     string l, b;
     ll int s = 0;
-    while(cin >> l, cin >> b) {
-        s += solve(l, b);
+    ll int in = 1;
+    while(cin >> l, cin >> b) {       
+        // cout << "Solving for:\n" << l << "\nand\n" << b << endl; 
+        s += solve(l, b) > 0 ? in : 0;
+        in++;
     }
 
-    cout << s << endl;
+    cout << s << endl;  
 
     return 0;
 }
